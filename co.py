@@ -11,19 +11,19 @@ st.markdown("""
 <style>
     body {
         font-family: 'Arial', sans-serif;
-        background-color: #f0f2f6;
-        color: #333;
+        background-color: #1E1E1E;
+        color: #E0E0E0;
     }
     .main {
-        background-color: #ffffff;
+        background-color: #2B2B2B;
         padding: 2rem;
         border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
     .stTextInput > div > div > input {
-        background-color: #f8f9fa;
-        color: #333;
-        border: 1px solid #ced4da;
+        background-color: #3C3C3C;
+        color: #E0E0E0;
+        border: 1px solid #555;
         border-radius: 5px;
         padding: 10px 15px;
         font-size: 16px;
@@ -44,16 +44,18 @@ st.markdown("""
         padding: 15px;
         border-radius: 10px;
         margin-bottom: 10px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         width: 80%;
         word-wrap: break-word;
     }
     .chat-message.user {
-        background-color: #e9ecef;
+        background-color: #1C3B4C;
+        color: #E0E0E0;
         margin-left: auto;
     }
     .chat-message.bot {
-        background-color: #f8f9fa;
+        background-color: #3C3C3C;
+        color: #E0E0E0;
         margin-right: auto;
     }
     .chat-message p {
@@ -70,6 +72,12 @@ st.markdown("""
     }
     .sidebar .sidebar-content .stButton > button:hover {
         background-color: #218838;
+    }
+    .stMetric {
+        background-color: #3C3C3C;
+        padding: 10px;
+        border-radius: 5px;
+        color: #E0E0E0;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -112,8 +120,8 @@ with st.sidebar:
     st.image("static/logo.svg", width=150)
     st.title("Document Analysis")
     
-    document_options = ["Nvidia Q4 2023", "Apple Annual Report 2023", "Tesla Q3 2023", "Amazon Q2 2023"]
-    selected_document = st.selectbox("Select a financial document:", document_options)
+    document_options = ["Nvidia", "Apple", "Tesla", "Amazon"]
+    selected_document = st.selectbox("Select a Company:", document_options)
     
     if selected_document != st.session_state.get('current_document'):
         st.session_state['current_document'] = selected_document
