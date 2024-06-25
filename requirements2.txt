@@ -1,0 +1,11 @@
+langchain
+langchain-community
+llama-parse
+chromadb
+python-dotenv
+langchain-groq
+chainlit
+fastembed
+unstructured[md]
+fastapi
+uvicorn
