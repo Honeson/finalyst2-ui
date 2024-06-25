@@ -83,7 +83,7 @@ if 'current_document' not in st.session_state:
     st.session_state['current_document'] = None
 
 # Backend URL
-backend_url = "http://127.0.0.1:8000/ask"
+backend_url = "https://finalyst2.onrender.com//ask"
 
 def ask_question(question, document):
     response = requests.post(backend_url, json={
