@@ -195,7 +195,7 @@ if st.button("Analyze") and question:
         "answer": response['answer']
     })
     update_current_chat_history(current_history)
-    st.experimental_rerun()
+    #st.experimental_rerun()
   
 
 # Key financial metrics
