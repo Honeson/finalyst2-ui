@@ -81,33 +81,45 @@ st.markdown("""
         border-radius: 5px;
         color: #E0E0E0;
     }
-            
-    .source-info {
-        background-color: #3C3C3C;
-        padding: 10px;
-        border-radius: 5px;
-        margin-top: 10px;
-        font-size: 0.9em;
-    }
-    .source-info p {
-        margin: 0;
-        padding: 2px 0;
-    }
 </style>
 """, unsafe_allow_html=True)
 
 # Initialize session state variables
-
 if 'session_id' not in st.session_state:
     st.session_state['session_id'] = str(uuid.uuid4())
 if 'chat_histories' not in st.session_state:
     st.session_state['chat_histories'] = [{'id': st.session_state['session_id'], 'history': [], 'timestamp': datetime.now()}]
 if 'current_document' not in st.session_state:
     st.session_state['current_document'] = None
+if 'document_processed' not in st.session_state:
+    st.session_state['document_processed'] = False
+if 'total_anchors' not in st.session_state:
+    st.session_state['total_anchors'] = 0
 
 # Backend URL
 backend_url = "https://finalyst2.onrender.com//ask"
 #backend_url = "http://127.0.0.1:8000/ask"
+
+def process_markdown_file(input_file, output_file):
+    with open(input_file, 'r') as file:
+        content = file.read()
+
+    header_pattern = re.compile(r'^(#{1,6})\s+(.+)$', re.MULTILINE)
+    anchor_id = 1
+    
+    def header_replacement(match):
+        nonlocal anchor_id
+        level, title = match.groups()
+        anchor = f'<a name="{anchor_id}"></a>\n{level} {title}'
+        anchor_id += 1
+        return anchor
+
+    processed_content = header_pattern.sub(header_replacement, content)
+
+    with open(output_file, 'w') as file:
+        file.write(processed_content)
+
+    return anchor_id - 1
 
 def ask_question(question, document):
     response = requests.post(backend_url, json={
@@ -115,9 +127,7 @@ def ask_question(question, document):
         "session_id": st.session_state['session_id'],
         "document": document
     })
-    return response.json()
-
-
+    return response.json()['answer']
 
 def get_current_chat_history():
     for chat in st.session_state['chat_histories']:
@@ -133,8 +143,35 @@ def update_current_chat_history(history):
             return
     st.session_state['chat_histories'].append({'id': st.session_state['session_id'], 'history': history, 'timestamp': datetime.now()})
 
+def display_full_document():
+    with open("data/processed_output.md", "r") as file:
+        content = file.read()
+    
+    st.markdown("""
+    <script>
+    function searchAndHighlight(text) {
+        const content = document.querySelector('.stMarkdown');
+        const regex = new RegExp(text, 'gi');
+        content.innerHTML = content.innerHTML.replace(regex, match => `<mark>${match}</mark>`);
+        const firstMatch = document.querySelector('mark');
+        if (firstMatch) {
+            firstMatch.scrollIntoView({behavior: 'smooth', block: 'center'});
+        }
+    }
+    </script>
+    """, unsafe_allow_html=True)
+    
+    st.markdown(content, unsafe_allow_html=True)
 
+# Process the markdown file if not already done
+if not st.session_state['document_processed']:
+    input_file = "data/output.md"
+    output_file = "data/processed_output.md"
+    total_anchors = process_markdown_file(input_file, output_file)
+    st.session_state['document_processed'] = True
+    st.session_state['total_anchors'] = total_anchors
 
+# Sidebar for document selection and new conversation
 with st.sidebar:
     st.image("static/logo.svg", width=150)
     st.title("Document Analysis")
@@ -164,39 +201,54 @@ with st.sidebar:
 # Main chat interface
 st.title(f"📊 Financial Analysis: {st.session_state['current_document']}")
 
-# Display current chat history
-current_history = get_current_chat_history()
-for chat in current_history:
-    st.markdown(f'<div class="chat-message user"><p>👤 {chat["question"]}</p></div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="chat-message bot"><p>🤖 {chat["answer"]["answer"]}</p></div>', unsafe_allow_html=True)
-    
-    # Display source information
-    with st.expander("View Source Information"):
-        for source in chat["answer"]["source_documents"]:
-            st.markdown(f"""
-            <div class="source-info">
-                <p><strong>File:</strong> {source['filename']}</p>
-                <p><strong>Page:</strong> {source['page_number']}</p>
-                <p><strong>Content:</strong> {source['page_content']}</p>
-            </div>
-            """, unsafe_allow_html=True)
+# Tab layout
+tab1, tab2 = st.tabs(["Analyze", "Full Document"])
 
+with tab1:
+    # Display current chat history
+    current_history = get_current_chat_history()
+    for chat in current_history:
+        st.markdown(f'<div class="chat-message user"><p>👤 {chat["question"]}</p></div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="chat-message bot"><p>🤖 {chat["answer"]}</p></div>', unsafe_allow_html=True)
+        
+        if "source_documents" in chat:
+            st.subheader("Source Documents:")
+            for i, doc in enumerate(chat["source_documents"]):
+                page_content = doc['page_content'][:30]  # First 30 characters
+                st.markdown(f"""
+                <a href="#" onclick="switchToDocumentTab(); searchAndHighlight('{page_content}'); return false;">
+                Source {i+1}: {page_content}...
+                </a>
+                """, unsafe_allow_html=True)
                 
 
-# Input for new question
-question = st.text_input("Ask about the financial document...", key="question_input")
+    # Input for new question
+    question = st.text_input("Ask about the financial document...", key="question_input")
 
-# Handle question submission
-if st.button("Analyze") and question:
-    with st.spinner("Analyzing..."):
-        response = ask_question(question, st.session_state['current_document'])
-    current_history.append({
-        "question": question,
-        "answer": response['answer']
-    })
-    update_current_chat_history(current_history)
-    st.experimental_rerun()
+    # Handle question submission
+    if st.button("Analyze") and question:
+        with st.spinner("Analyzing..."):
+            response = ask_question(question, st.session_state['current_document'])
+        current_history.append({
+            "question": question,
+            "answer": response['answer'],
+            "source_documents": response['source_documents']
+        })
+        update_current_chat_history(current_history)
+        st.experimental_rerun()
   
+
+with tab2:
+    display_full_document()
+
+st.markdown("""
+<script>
+function switchToDocumentTab() {
+    const tabs = window.parent.document.querySelectorAll('.stTabs button[role="tab"]');
+    tabs[1].click();
+}
+</script>
+""", unsafe_allow_html=True)
 
 # Key financial metrics
 st.subheader("Key Financial Metrics")
