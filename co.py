@@ -146,7 +146,7 @@ with st.sidebar:
         st.session_state['current_document'] = selected_document
         st.session_state['session_id'] = str(uuid.uuid4())
         st.session_state['chat_histories'].append({'id': st.session_state['session_id'], 'history': [], 'timestamp': datetime.now()})
-        st.experimental_rerun()
+        #st.experimental_rerun()
     
     if st.button("Start New Analysis"):
         st.session_state['session_id'] = str(uuid.uuid4())
