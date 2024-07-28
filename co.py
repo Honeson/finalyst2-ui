@@ -137,7 +137,7 @@ def update_current_chat_history(history):
 
 with st.sidebar:
     st.image("static/logo.svg", width=150)
-    st.title("Document Analysis")
+    st.title("Financial Document Analysis")
     
     document_options = ["Nvidia", "Apple", "Tesla", "Amazon"]
     selected_document = st.selectbox("Select a Company:", document_options)
@@ -146,7 +146,7 @@ with st.sidebar:
         st.session_state['current_document'] = selected_document
         st.session_state['session_id'] = str(uuid.uuid4())
         st.session_state['chat_histories'].append({'id': st.session_state['session_id'], 'history': [], 'timestamp': datetime.now()})
-        #st.experimental_rerun()
+        st.experimental_rerun()
     
     if st.button("Start New Analysis"):
         st.session_state['session_id'] = str(uuid.uuid4())
@@ -195,7 +195,7 @@ if st.button("Analyze") and question:
         "answer": response['answer']
     })
     update_current_chat_history(current_history)
-    #st.experimental_rerun()
+    st.experimental_rerun()
   
 
 # Key financial metrics
@@ -210,7 +210,7 @@ with col3:
 
 # Footer
 st.markdown("---")
-st.write("🌐 Connected to: Equitech Ventures Financial Analysis Engine")
+st.write("🌐 Connected to: Equitech Ventures Financial Analysis Bot")
 st.write("ℹ️ Pro Tips:")
 st.write("- Select a document from the sidebar to start a new analysis.")
 st.write("- Ask specific questions about financial metrics, trends, or comparisons.")
