@@ -139,7 +139,7 @@ with st.sidebar:
     st.image("static/logo.svg", width=150)
     st.title("Financial Document Analysis")
     
-    document_options = ["Nvidia", "Apple", "Tesla", "Amazon"]
+    document_options = ["Nvidia", "MINISO", "Tesla", "Amazon"]
     selected_document = st.selectbox("Select a Company:", document_options)
     
     if selected_document != st.session_state.get('current_document'):
@@ -184,7 +184,7 @@ for chat in current_history:
                 
 
 # Input for new question
-question = st.text_input("Ask about the financial document...", key="question_input")
+question = st.text_input("Perform Financial Analysis Today...", key="question_input")
 
 # Handle question submission
 if st.button("Analyze") and question:
